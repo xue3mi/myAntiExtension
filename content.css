@@ -1,7 +1,7 @@
 /* Font for the UI */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-/* UI Container - Fixed over everything */
+/* UI Container - Fixed to screen, relies on Canvas Panning for scroll emulation */
 #wa-ui-container {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
@@ -18,7 +18,7 @@
 /* Figma Minimalist Light Style */
 .wa-panel {
   pointer-events: auto; /* enable interactions on panels */
-  position: absolute;
+  position: absolute; /* Revert to absolute relative to fixed viewport wrapper */
   top: 50%;
   transform: translateY(-50%);
   background: #ffffff;

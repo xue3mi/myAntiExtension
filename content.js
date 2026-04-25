@@ -306,29 +306,54 @@ if (!window.waAnnotatorInjected) {
       }
     });
 
-    // Set canvas dimensions to document scroll dimensions
-    const width = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-    
-    canvasEl.width = width;
-    canvasEl.height = height;
+    // Canvas strictly anchors to the physical viewport bounds to emulate rendering over SPAs and docs
+    canvasEl.width = window.innerWidth;
+    canvasEl.height = window.innerHeight;
 
     canvas = new fabric.Canvas('wa-canvas', {
       isDrawingMode: false,
       selection: false,
-      width: width,
-      height: height
+      width: window.innerWidth,
+      height: window.innerHeight
     });
 
-    // Resize observer to adjust canvas if page size changes
-    const resizeObserver = new ResizeObserver(() => {
-      const w = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-      const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      canvas.setWidth(w);
-      canvas.setHeight(h);
+    // Resize listener for window boundary changes without polling document geometries natively
+    window.addEventListener('resize', () => {
+      canvas.setWidth(window.innerWidth);
+      canvas.setHeight(window.innerHeight);
       canvas.renderAll();
     });
-    resizeObserver.observe(document.body);
+
+    // Advanced Global Scroll Capture to pan the virtual canvas context manually seamlessly over SPA inner-DIV scrolls (e.g., Google Docs)
+    let currentScrollX = 0;
+    let currentScrollY = 0;
+    
+    window.addEventListener('scroll', (e) => {
+      let updated = false;
+      if (e.target === document || e.target === document.documentElement || e.target === document.body) {
+        currentScrollX = window.scrollX || document.documentElement.scrollLeft;
+        currentScrollY = window.scrollY || document.documentElement.scrollTop;
+        updated = true;
+      } else if (e.target && e.target.clientWidth && e.target.clientHeight) {
+        // Dynamically detect if a scrolled internal frame is the primary "page" container
+        const area = e.target.clientWidth * e.target.clientHeight;
+        const screenArea = window.innerWidth * window.innerHeight;
+        // If the scrolling container covers more than 30% of your screen area, it's effectively the main app document pane
+        if (area > screenArea * 0.3) {
+           currentScrollX = e.target.scrollLeft;
+           currentScrollY = e.target.scrollTop;
+           updated = true;
+        }
+      }
+      
+      if (updated && canvas) {
+         // Transform canvas viewport opposite to scrolling allowing visual persistence mapping
+         const vpt = canvas.viewportTransform;
+         vpt[4] = -currentScrollX;
+         vpt[5] = -currentScrollY;
+         canvas.renderAll();
+      }
+    }, true); // Capture phase enables reliable hijacking of events on arbitrary complex shadow/virtual DOMs
 
     // Track objects added to preserve layer order and update UI
     canvas.on('object:added', (e) => {
@@ -793,11 +818,9 @@ if (!window.waAnnotatorInjected) {
        isVisible = !isVisible;
        if (isVisible) {
           container.classList.remove('hidden');
-          // Update resize just in case window size changed while hidden
-          const w = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-          const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-          canvas.setWidth(w);
-          canvas.setHeight(h);
+          // Ensure correct viewport scale upon un-hiding if window was modified
+          canvas.setWidth(window.innerWidth);
+          canvas.setHeight(window.innerHeight);
           canvas.renderAll();
        } else {
           container.classList.add('hidden');
