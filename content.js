@@ -653,23 +653,42 @@ if (!window.waAnnotatorInjected) {
         const uiContainer = document.getElementById('wa-ui-container');
         uiContainer.style.opacity = '0'; // Hide UI
         
-        // Find main scroller
+        // Find main scroller by explicitly analyzing HTML DOM capabilities!
         let scroller = document.documentElement;
         if (scroller.scrollHeight <= window.innerHeight) {
            scroller = document.body;
         }
         
         const elements = document.querySelectorAll('*');
+        let bestArea = 0;
+        
         for (let el of elements) {
-           if (el.scrollHeight > el.clientHeight && el.clientWidth * el.clientHeight > window.innerWidth * window.innerHeight * 0.3) {
-               scroller = el;
-               break;
+           if (el.scrollHeight > el.clientHeight) {
+               const style = window.getComputedStyle(el);
+               const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflowY === 'overlay');
+               
+               // In some extreme SPAs they might hijack scrolling completely, 
+               // but typically the true scrolling HTML block must have CSS overflow rules or be the body itself.
+               if (isScrollable) {
+                   const area = el.clientWidth * el.clientHeight;
+                   // Pick the largest actual scrollable block over 30% of the screen
+                   if (area > window.innerWidth * window.innerHeight * 0.3 && area > bestArea) {
+                       bestArea = area;
+                       scroller = el;
+                   }
+               }
            }
         }
         
+        const rect = scroller.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const sLeft = rect.left;
+        const sTop = (scroller === document.documentElement || scroller === document.body) ? 0 : rect.top;
+        const sWidth = scroller.clientWidth || window.innerWidth;
+        const sHeight = scroller.clientHeight || window.innerHeight;
+        
         const scrollHeight = scroller.scrollHeight;
-        const viewportHeight = scroller.clientHeight || window.innerHeight;
-        const MathCeil = Math.ceil(scrollHeight / viewportHeight);
+        const MathCeil = Math.ceil(scrollHeight / sHeight);
         
         const snapshots = [];
         const originalScroll = scroller.scrollTop;
@@ -693,27 +712,38 @@ if (!window.waAnnotatorInjected) {
            });
            
            if (i < MathCeil - 1) {
-              scroller.scrollTop += viewportHeight;
+              scroller.scrollTop += sHeight;
               await new Promise(r => setTimeout(r, 500)); // wait for DOM virtual loading
            }
         }
         
-        // Restore
+        // Restore UI state
         scroller.scrollTop = originalScroll;
         uiContainer.style.opacity = '1';
-        
-        // Stitch
+
+        // Stitch using explicit high-res pixel multipliers to prevent Fabric/Canvas scaling conflicts
+        const compositeDpr = window.devicePixelRatio || 1;
         const composite = document.createElement('canvas');
-        composite.width = window.innerWidth;
-        composite.height = scrollHeight;
+        composite.width = sWidth * compositeDpr; 
+        composite.height = scrollHeight * compositeDpr;
         const ctx = composite.getContext('2d');
         
         for (let shot of snapshots) {
            const img = new Image();
            img.src = shot.src;
            await new Promise(r => img.onload = r);
-           // Chrome captureVisibleTab captures the whole screen (including scrollbars). We map it purely.
-           ctx.drawImage(img, 0, shot.y, window.innerWidth, window.innerHeight);
+           
+           // Dynamically identify Chrome's background graphic buffer density
+           const imgDpr = img.width / window.innerWidth;
+           
+           // Calculate exact crop dimensions from the native screen-captured buffer
+           const cropX = sLeft * imgDpr;
+           const cropY = sTop * imgDpr;
+           const cropW = sWidth * imgDpr;
+           const cropH = sHeight * imgDpr;
+           
+           // Map correctly to our composite High-Res matrix tracking absolute scroll progress
+           ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, shot.y * compositeDpr, sWidth * compositeDpr, sHeight * compositeDpr);
         }
         
         // Render Fabric Layer accurately over the stitched map
@@ -721,12 +751,15 @@ if (!window.waAnnotatorInjected) {
         const oldW = canvas.width;
         const oldH = canvas.height;
         
-        canvas.setWidth(window.innerWidth);
+        canvas.setWidth(sWidth);
         canvas.setHeight(scrollHeight);
-        canvas.viewportTransform = [1,0,0,1,0,0]; // Reset pan
+        // Reset pan but adjust mathematically to both top & left structural gaps!
+        canvas.viewportTransform = [1,0,0,1, -sLeft, -sTop]; 
         canvas.renderAll();
         
-        ctx.drawImage(canvas.getElement(), 0, 0);
+        // Fabric's internal element is natively built at compositeDpr scale.
+        // We forcibly map it to full bounds to ensure absolutely zero visual displacement!
+        ctx.drawImage(canvas.getElement(), 0, 0, sWidth * compositeDpr, scrollHeight * compositeDpr);
         
         // Restore canvas
         canvas.setWidth(oldW);
