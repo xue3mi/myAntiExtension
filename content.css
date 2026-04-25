@@ -313,21 +313,31 @@
   font-size: 0.95rem; /* smaller header */
   font-weight: 600;
 }
-#wa-add-layer {
+.wa-header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.wa-btn-small {
   background: transparent;
   border: none;
-  color: #555;
+  color: #777;
   cursor: pointer;
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  border-radius: 6px;
 }
-#wa-add-layer:hover {
+.wa-btn-small:hover {
   background: #f2f3f5;
-  border-radius: 50%;
+  color: #18a0fb;
+}
+.wa-btn-small.active {
+  background: #eef7ff;
+  color: #18a0fb;
 }
 
 #wa-layers-list {

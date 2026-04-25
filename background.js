@@ -14,6 +14,11 @@ chrome.action.onClicked.addListener((tab) => {
       }).then(() => {
         return chrome.scripting.executeScript({
           target: { tabId: tab.id },
+          files: ["lib/html2canvas.min.js"],
+        });
+      }).then(() => {
+        return chrome.scripting.executeScript({
+          target: { tabId: tab.id },
           files: ["content.js"],
         });
       }).catch((err) => console.error("Web Annotator injection failed: ", err));

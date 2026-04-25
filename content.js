@@ -35,7 +35,11 @@ if (!window.waAnnotatorInjected) {
     chevronLeft: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`,
     chevronRight: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`,
     size: `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="8"></circle></svg>`,
-    opacity: `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="8"></circle><path d="M12 4v16a8 8 0 0 0 0-16z" fill="currentColor"></path></svg>`
+    opacity: `<svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="8"></circle><path d="M12 4v16a8 8 0 0 0 0-16z" fill="currentColor"></path></svg>`,
+    download: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
+    cloudSync: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="m14 14-2-2-2 2"/><path d="M12 12v7"/></svg>`,
+    cloudOff: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
+    database: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
   };
   
   let toolOpacities = {
@@ -45,6 +49,58 @@ if (!window.waAnnotatorInjected) {
     rect: 1,
     text: 1
   };
+  
+  let isAutoSave = false;
+
+  function getStoreKey() {
+    return 'wa_saves_' + window.location.href.split('#')[0];
+  }
+
+  function saveState() {
+     if (!isAutoSave || !canvas) return;
+     
+     // Garbage Collection: If user clears everything, wipe the database record automatically
+     if (canvas.getObjects().length === 0 && layers.length <= 1) {
+         chrome.storage.local.remove(getStoreKey());
+         return;
+     }
+
+     const state = {
+         canvas: canvas.toJSON(['layerId', 'id', 'p']),
+         layers: layers,
+         currentLayerId: currentLayerId,
+         layerIndexCounter: layerIndexCounter
+     };
+     chrome.storage.local.set({ [getStoreKey()]: state });
+  }
+
+  function loadState(callback) {
+     chrome.storage.local.get([getStoreKey()], (res) => {
+        const state = res[getStoreKey()];
+        if (state && state.layers) {
+            layers = state.layers;
+            currentLayerId = state.currentLayerId || 'layer-1';
+            layerIndexCounter = state.layerIndexCounter || 1;
+            canvas.loadFromJSON(state.canvas, () => {
+                canvas.renderAll();
+                renderLayers();
+                
+                // Automatically toggle UI Sync to active if this page had pre-existing save data!
+                isAutoSave = true;
+                const syncBtn = document.getElementById('wa-btn-autosave');
+                if (syncBtn) {
+                   syncBtn.classList.add('active');
+                   syncBtn.innerHTML = ICONS.cloudSync;
+                   syncBtn.title = 'Auto-Save Sync (Enabled)';
+                }
+
+                if (callback) callback();
+            });
+        } else {
+            if (callback) callback();
+        }
+     });
+  }
   
   let toolSizes = {
     pen: 3,
@@ -196,7 +252,11 @@ if (!window.waAnnotatorInjected) {
     layersPanel.innerHTML = `
        <div class="wa-layer-header">
          <h3>Layers</h3>
-         <button id="wa-add-layer" title="New Layer">${ICONS.add}</button>
+         <div class="wa-header-actions">
+           <button class="wa-btn-small" id="wa-btn-autosave" title="Auto-Save Sync (Disabled)">${ICONS.cloudOff}</button>
+           <button class="wa-btn-small" id="wa-btn-export" title="Export as Image">${ICONS.download}</button>
+           <button class="wa-btn-small" id="wa-add-layer" title="New Layer">${ICONS.add}</button>
+         </div>
        </div>
        <div id="wa-layers-list"></div>
     `;
@@ -218,8 +278,12 @@ if (!window.waAnnotatorInjected) {
     initFabric(canvasEl);
     bindEvents(toolbar, layersPanel);
     
-    // Add initial layer
-    addLayer('Layer 1');
+    // Attempt to load from storage or initialize default Layer 1
+    loadState(() => {
+        if (layers.length === 0) {
+            addLayer('Layer 1');
+        }
+    });
   }
 
   function initFabric(canvasEl) {
@@ -362,10 +426,16 @@ if (!window.waAnnotatorInjected) {
        }
        sortFabricObjects();
        renderLayers();
+       saveState();
     });
 
     canvas.on('object:removed', () => {
        renderLayers();
+       saveState();
+    });
+    
+    canvas.on('object:modified', () => {
+       saveState();
     });
 
     // Auto-switch layer when an object is selected
@@ -402,6 +472,7 @@ if (!window.waAnnotatorInjected) {
           layerId: currentLayerId
         });
         canvas.add(currentLine);
+        saveState();
       } else if (currentTool === 'eraser' && options.target) {
         canvas.remove(options.target);
       } else if (currentTool === 'rect') {
@@ -425,6 +496,7 @@ if (!window.waAnnotatorInjected) {
       if (isDrawingLine && currentTool === 'highlight') {
         isDrawingLine = false;
         currentLine = null;
+        saveState();
       }
     });
     
@@ -543,6 +615,82 @@ if (!window.waAnnotatorInjected) {
       layerIndexCounter++;
       addLayer(`Layer ${layerIndexCounter}`);
     });
+
+    // Persistence and Export Actions
+    document.getElementById('wa-btn-autosave').addEventListener('click', (e) => {
+       const btn = e.currentTarget;
+       isAutoSave = !isAutoSave;
+       if (isAutoSave) {
+          btn.classList.add('active');
+          btn.innerHTML = ICONS.cloudSync;
+          btn.title = 'Auto-Save Sync (Enabled)';
+          saveState(); // Trigger a save immediately
+       } else {
+          btn.classList.remove('active');
+          btn.innerHTML = ICONS.cloudOff;
+          btn.title = 'Auto-Save Sync (Disabled)';
+       }
+    });
+
+    document.getElementById('wa-btn-export').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      if (typeof html2canvas === 'undefined') {
+        alert("Export engine (html2canvas) isn't loaded yet. Try refreshing the page!");
+        return;
+      }
+      const originalInner = btn.innerHTML;
+      btn.innerHTML = `<span style="font-size:10px;">...</span>`;
+      
+      try {
+        const uiContainer = document.getElementById('wa-ui-container');
+        uiContainer.style.opacity = '0'; // Hide entire UI (panels and drawing lines temporarily)
+        
+        // 1. Capture the full background webpage organically DOM-deep
+        const bgCanvas = await html2canvas(document.body, { 
+           useCORS: true, 
+           allowTaint: true, 
+           logging: false 
+        });
+        
+        uiContainer.style.opacity = '1';
+        
+        // 2. Map Fabric to literal Document size and remove virtualization panning
+        const originalWidth = canvas.width;
+        const originalHeight = canvas.height;
+        const originalVpt = canvas.viewportTransform.slice();
+        
+        canvas.setWidth(bgCanvas.width);
+        canvas.setHeight(bgCanvas.height);
+        canvas.viewportTransform = [1,0,0,1,0,0]; // absolute physical coordinate mapping
+        canvas.renderAll();
+        
+        // 3. Composite DOM printout with Annotation layer
+        const composite = document.createElement('canvas');
+        composite.width = bgCanvas.width;
+        composite.height = bgCanvas.height;
+        const ctx = composite.getContext('2d');
+        ctx.drawImage(bgCanvas, 0, 0);
+        ctx.drawImage(canvas.getElement(), 0, 0); // Directly overlays precisely translated annotations
+        
+        // 4. Restore virtual viewport settings silently
+        canvas.setWidth(originalWidth);
+        canvas.setHeight(originalHeight);
+        canvas.viewportTransform = originalVpt;
+        canvas.renderAll();
+        
+        // 5. Package output payload locally
+        const link = document.createElement('a');
+        link.download = 'Web_Annotation_' + document.title.replace(/[^a-z0-9]/gi, '_') + '.png';
+        link.href = composite.toDataURL('image/png', 1.0);
+        link.click();
+      } catch (err) {
+         console.error("Export Failed:", err);
+         alert("Export failed on this specific webpage architecture. Please consider standard screen recording.");
+         document.getElementById('wa-ui-container').style.opacity = '1';
+      }
+      
+      btn.innerHTML = originalInner;
+    });
   }
 
   function setTool(tool) {
@@ -659,6 +807,7 @@ if (!window.waAnnotatorInjected) {
       currentLayerId = layers[layers.length - 1].id;
     }
     renderLayers();
+    saveState();
   }
 
   function toggleLayerVisible(id, btnElement) {
@@ -772,6 +921,7 @@ if (!window.waAnnotatorInjected) {
             layer.name = input.value.trim();
           }
           renderLayers();
+          saveState();
         };
 
         input.onblur = finishRename;
