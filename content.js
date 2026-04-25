@@ -41,7 +41,16 @@ if (!window.waAnnotatorInjected) {
     cloudOff: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
     database: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
   };
-  
+
+  const CUSTOM_CURSORS = {
+    cursor: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="%23333333" stroke="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path></svg>') 3 3, default`,
+    pen: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="%23333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>') 2 22, crosshair`,
+    highlight: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="2"><line x1="12" y1="0" x2="12" y2="24"></line><line x1="0" y1="12" x2="24" y2="12"></line></svg>') 12 12, crosshair`,
+    rect: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"></line><line x1="1" y1="8" x2="15" y2="8"></line><rect x="12" y="12" width="10" height="10" rx="2"></rect></svg>') 8 8, crosshair`,
+    text: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>') 12 12, text`,
+    eraser: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="%23333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16a2 2 0 0 1 0-2.8L13 3.2a2 2 0 0 1 2.8 0L20.8 8.2a2 2 0 0 1 0 2.8L12 20"></path><line x1="16" y1="15" x2="10" y2="9"></line></svg>') 0 22, pointer`
+  };
+
   let toolOpacities = {
     pen: 1,
     'pressure-pen': 1,
@@ -495,6 +504,9 @@ if (!window.waAnnotatorInjected) {
     canvas.on('mouse:up', () => {
       if (isDrawingLine && currentTool === 'highlight') {
         isDrawingLine = false;
+        if (currentLine) {
+           currentLine.setCoords(); // crucial for fabric hit detection since we manually mutated x2/y2
+        }
         currentLine = null;
         saveState();
       }
@@ -634,58 +646,102 @@ if (!window.waAnnotatorInjected) {
 
     document.getElementById('wa-btn-export').addEventListener('click', async (e) => {
       const btn = e.currentTarget;
-      if (typeof html2canvas === 'undefined') {
-        alert("Export engine (html2canvas) isn't loaded yet. Try refreshing the page!");
-        return;
-      }
       const originalInner = btn.innerHTML;
       btn.innerHTML = `<span style="font-size:10px;">...</span>`;
       
       try {
         const uiContainer = document.getElementById('wa-ui-container');
-        uiContainer.style.opacity = '0'; // Hide entire UI (panels and drawing lines temporarily)
+        uiContainer.style.opacity = '0'; // Hide UI
         
-        // 1. Capture the full background webpage organically DOM-deep
-        const bgCanvas = await html2canvas(document.body, { 
-           useCORS: true, 
-           allowTaint: true, 
-           logging: false 
-        });
+        // Find main scroller
+        let scroller = document.documentElement;
+        if (scroller.scrollHeight <= window.innerHeight) {
+           scroller = document.body;
+        }
         
+        const elements = document.querySelectorAll('*');
+        for (let el of elements) {
+           if (el.scrollHeight > el.clientHeight && el.clientWidth * el.clientHeight > window.innerWidth * window.innerHeight * 0.3) {
+               scroller = el;
+               break;
+           }
+        }
+        
+        const scrollHeight = scroller.scrollHeight;
+        const viewportHeight = scroller.clientHeight || window.innerHeight;
+        const MathCeil = Math.ceil(scrollHeight / viewportHeight);
+        
+        const snapshots = [];
+        const originalScroll = scroller.scrollTop;
+        scroller.scrollTop = 0;
+        
+        // Let structural shifts settle
+        await new Promise(r => setTimeout(r, 400));
+        
+        for (let i = 0; i < MathCeil; i++) {
+           const dataUrl = await new Promise((resolve) => {
+               chrome.runtime.sendMessage({ action: "captureVisibleTab" }, (response) => {
+                   resolve(response ? response.dataUrl : null);
+               });
+           });
+           
+           if (!dataUrl) throw new Error("Background capture failed.");
+           
+           snapshots.push({
+               src: dataUrl,
+               y: scroller.scrollTop
+           });
+           
+           if (i < MathCeil - 1) {
+              scroller.scrollTop += viewportHeight;
+              await new Promise(r => setTimeout(r, 500)); // wait for DOM virtual loading
+           }
+        }
+        
+        // Restore
+        scroller.scrollTop = originalScroll;
         uiContainer.style.opacity = '1';
         
-        // 2. Map Fabric to literal Document size and remove virtualization panning
-        const originalWidth = canvas.width;
-        const originalHeight = canvas.height;
-        const originalVpt = canvas.viewportTransform.slice();
+        // Stitch
+        const composite = document.createElement('canvas');
+        composite.width = window.innerWidth;
+        composite.height = scrollHeight;
+        const ctx = composite.getContext('2d');
         
-        canvas.setWidth(bgCanvas.width);
-        canvas.setHeight(bgCanvas.height);
-        canvas.viewportTransform = [1,0,0,1,0,0]; // absolute physical coordinate mapping
+        for (let shot of snapshots) {
+           const img = new Image();
+           img.src = shot.src;
+           await new Promise(r => img.onload = r);
+           // Chrome captureVisibleTab captures the whole screen (including scrollbars). We map it purely.
+           ctx.drawImage(img, 0, shot.y, window.innerWidth, window.innerHeight);
+        }
+        
+        // Render Fabric Layer accurately over the stitched map
+        const originalVpt = canvas.viewportTransform.slice();
+        const oldW = canvas.width;
+        const oldH = canvas.height;
+        
+        canvas.setWidth(window.innerWidth);
+        canvas.setHeight(scrollHeight);
+        canvas.viewportTransform = [1,0,0,1,0,0]; // Reset pan
         canvas.renderAll();
         
-        // 3. Composite DOM printout with Annotation layer
-        const composite = document.createElement('canvas');
-        composite.width = bgCanvas.width;
-        composite.height = bgCanvas.height;
-        const ctx = composite.getContext('2d');
-        ctx.drawImage(bgCanvas, 0, 0);
-        ctx.drawImage(canvas.getElement(), 0, 0); // Directly overlays precisely translated annotations
+        ctx.drawImage(canvas.getElement(), 0, 0);
         
-        // 4. Restore virtual viewport settings silently
-        canvas.setWidth(originalWidth);
-        canvas.setHeight(originalHeight);
+        // Restore canvas
+        canvas.setWidth(oldW);
+        canvas.setHeight(oldH);
         canvas.viewportTransform = originalVpt;
         canvas.renderAll();
         
-        // 5. Package output payload locally
         const link = document.createElement('a');
         link.download = 'Web_Annotation_' + document.title.replace(/[^a-z0-9]/gi, '_') + '.png';
         link.href = composite.toDataURL('image/png', 1.0);
         link.click();
+        
       } catch (err) {
          console.error("Export Failed:", err);
-         alert("Export failed on this specific webpage architecture. Please consider standard screen recording.");
+         alert("Hardware Export Failed. Please ensure the extension has sufficient permissions.");
          document.getElementById('wa-ui-container').style.opacity = '1';
       }
       
@@ -722,8 +778,14 @@ if (!window.waAnnotatorInjected) {
       // Capture clicks on canvas
       wrapper.classList.add('interactive');
       
+      // RESET: Prevent custom tool cursors (like Eraser) from bleeding into others
+      canvas.defaultCursor = 'default';
+      canvas.hoverCursor = 'move';
+      
       if (tool === 'pen' || tool === 'pressure-pen') {
         canvas.isDrawingMode = true;
+        canvas.defaultCursor = CUSTOM_CURSORS.pen;
+        canvas.freeDrawingCursor = CUSTOM_CURSORS.pen;
         
         if (tool === 'pressure-pen') {
             if (!canvas.pressureBrushInstance) canvas.pressureBrushInstance = new fabric.PressurePenBrush(canvas);
@@ -739,11 +801,21 @@ if (!window.waAnnotatorInjected) {
         canvas.freeDrawingBrush.width = parseInt(document.getElementById('wa-brush-size').value, 10);
       } else if (tool === 'highlight') {
         canvas.forEachObject(obj => { obj.selectable = false; obj.evented = false; });
+        canvas.defaultCursor = CUSTOM_CURSORS.highlight;
+        canvas.hoverCursor = CUSTOM_CURSORS.highlight;
       } else if (tool === 'cursor') {
         canvas.selection = true;
         canvas.forEachObject(obj => { obj.selectable = true; obj.evented = true; });
+        canvas.defaultCursor = CUSTOM_CURSORS.cursor;
+        canvas.hoverCursor = CUSTOM_CURSORS.cursor;
       } else if (tool === 'eraser') {
         canvas.forEachObject(obj => { obj.selectable = false; obj.evented = true; }); // needs evented for click detection
+        canvas.defaultCursor = CUSTOM_CURSORS.eraser;
+        canvas.hoverCursor = CUSTOM_CURSORS.eraser;
+      } else if (tool === 'rect') {
+        canvas.defaultCursor = CUSTOM_CURSORS.rect;
+      } else if (tool === 'text') {
+        canvas.defaultCursor = CUSTOM_CURSORS.text;
       }
     }
   }
