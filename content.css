@@ -405,6 +405,51 @@
   color: #333;
 }
 
+/* Shape Flyout Panel (card style with two rows) */
+.wa-flyout-shape-panel {
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 10px !important;
+  background: #fff !important;
+  border: 1px solid #e1e3e8 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+  margin-left: 14px !important;
+}
+/* Individual rows inside the shape flyout */
+.wa-flyout-row {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+/* Horizontal divider between rows */
+.wa-flyout-divider {
+  height: 1px;
+  background: #f0f1f4;
+  margin: 4px 0;
+}
+/* Buttons inside the panel */
+.wa-flyout-shape-panel .wa-btn {
+  box-shadow: none !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 9px !important;
+}
+/* Style row buttons (Fill / Stroke) */
+.wa-flyout-row:last-child .wa-btn {
+  height: 34px !important;
+  flex: 1;
+  border-radius: 9px !important;
+  border: 1px solid transparent;
+  font-size: 13px;
+  padding: 0 10px;
+}
+.wa-flyout-row:last-child .wa-btn.active {
+  background: #eef7ff;
+  color: #18a0fb;
+  border-color: #c8e6fd;
+}
+
 /* Canvas Wrapper - Bound to document dimensions */
 #wa-canvas-wrapper {
   position: absolute;

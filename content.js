@@ -26,7 +26,15 @@ if (!window.waAnnotatorInjected) {
     squigglePressure: `<svg viewBox="0 0 40 20" width="28" height="14" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M 4 10 C 13 -3, 27 23, 36 10 C 26 27, 14 -7, 4 10 Z"></path></svg>`,
     highlight: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none" class="wa-icon"><path d="M18 2l4 4-10 10H8v-4L18 2z"></path><path d="M8 12L4 16v4h4l4-4"></path><line x1="2" y1="22" x2="22" y2="22" stroke-width="2"></line></svg>`,
     eraser: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20"></path><line x1="16" y1="15" x2="10" y2="9"></line></svg>`,
+    eraserPixel: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="13" r="7"></circle><line x1="6" y1="10.5" x2="14" y2="18"></line><line x1="7" y1="20" x2="21" y2="20"></line></svg>`,
     rect: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`,
+    circle: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="9"></circle></svg>`,
+    triangle: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><polygon points="12 3 22 21 2 21"></polygon></svg>`,
+    rectFilled: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`,
+    circleFilled: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="9"></circle></svg>`,
+    triangleFilled: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><polygon points="12 3 22 21 2 21"></polygon></svg>`,
+    styleFill: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><rect x="2" y="2" width="20" height="20" rx="3"></rect></svg>`,
+    styleStroke: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="3"></rect></svg>`,
     text: `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>`,
     add: `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
     eye: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
@@ -47,25 +55,107 @@ if (!window.waAnnotatorInjected) {
     pen: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="%23333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>') 2 22, crosshair`,
     highlight: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="2"><line x1="12" y1="0" x2="12" y2="24"></line><line x1="0" y1="12" x2="24" y2="12"></line></svg>') 12 12, crosshair`,
     rect: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"></line><line x1="1" y1="8" x2="15" y2="8"></line><rect x="12" y="12" width="10" height="10" rx="2"></rect></svg>') 8 8, crosshair`,
+    circle: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"></line><line x1="1" y1="8" x2="15" y2="8"></line><circle cx="18" cy="18" r="5"></circle></svg>') 8 8, crosshair`,
+    triangle: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"></line><line x1="1" y1="8" x2="15" y2="8"></line><polygon points="18 13 23 22 13 22"></polygon></svg>') 8 8, crosshair`,
     text: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333333" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>') 12 12, text`,
     eraser: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="%23333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16a2 2 0 0 1 0-2.8L13 3.2a2 2 0 0 1 2.8 0L20.8 8.2a2 2 0 0 1 0 2.8L12 20"></path><line x1="16" y1="15" x2="10" y2="9"></line></svg>') 0 22, pointer`
   };
+
+  let isFillMode = true; // true = filled shapes, false = stroked (outline) shapes
 
   let toolOpacities = {
     pen: 1,
     'pressure-pen': 1,
     highlight: 0.5,
     rect: 1,
+    circle: 1,
+    triangle: 1,
     text: 1
   };
+
+  // Pixel eraser state
+  let pixelEraserActive = false;
+  let pixelEraserPoints = [];
+  let lastDrawPoint = null; // Stores last point for Shift-click line connection
   
   let isAutoSave = false;
+  
+  // History & Undo State
+  let historyStack = [];
+  let historyIndex = -1;
+  let isHistoryAction = false;
+  const MAX_HISTORY = 30;
+  
+  // Clipboard State
+  let clipboard = null;
+  let pasteOffset = 0;
 
   function getStoreKey() {
     return 'wa_saves_' + window.location.href.split('#')[0];
   }
 
-  function saveState() {
+  function saveHistory() {
+     if (!canvas || isHistoryAction) return;
+     const state = {
+         canvas: canvas.toJSON(['layerId', 'id', 'p']),
+         layers: JSON.parse(JSON.stringify(layers)),
+         currentLayerId: currentLayerId,
+         layerIndexCounter: layerIndexCounter
+     };
+     
+     if (historyIndex < historyStack.length - 1) {
+         historyStack = historyStack.slice(0, historyIndex + 1);
+     }
+     
+     historyStack.push(state);
+     if (historyStack.length > MAX_HISTORY) {
+         historyStack.shift();
+     } else {
+         historyIndex++;
+     }
+  }
+
+  function undo() {
+      if (historyIndex > 0) {
+          isHistoryAction = true;
+          historyIndex--;
+          const state = historyStack[historyIndex];
+          
+          layers = JSON.parse(JSON.stringify(state.layers));
+          currentLayerId = state.currentLayerId;
+          layerIndexCounter = state.layerIndexCounter;
+          
+          canvas.loadFromJSON(state.canvas, () => {
+              canvas.renderAll();
+              renderLayers();
+              updateSliderStates();
+              isHistoryAction = false;
+              saveToStorage();
+          });
+      }
+  }
+
+  function redo() {
+      if (historyIndex < historyStack.length - 1) {
+          isHistoryAction = true;
+          historyIndex++;
+          const state = historyStack[historyIndex];
+          
+          layers = JSON.parse(JSON.stringify(state.layers));
+          currentLayerId = state.currentLayerId;
+          layerIndexCounter = state.layerIndexCounter;
+          
+          canvas.loadFromJSON(state.canvas, () => {
+              canvas.renderAll();
+              renderLayers();
+              updateSliderStates();
+              isHistoryAction = false;
+              saveToStorage();
+          });
+      }
+  }
+
+  function saveToStorage() {
      if (!isAutoSave || !canvas) return;
      
      // Garbage Collection: If user clears everything, wipe the database record automatically
@@ -81,6 +171,11 @@ if (!window.waAnnotatorInjected) {
          layerIndexCounter: layerIndexCounter
      };
      chrome.storage.local.set({ [getStoreKey()]: state });
+  }
+
+  function saveState() {
+     saveHistory();
+     saveToStorage();
   }
 
   function loadState(callback) {
@@ -116,7 +211,10 @@ if (!window.waAnnotatorInjected) {
     'pressure-pen': 3,
     highlight: 20, // Highlighters default much thicker
     rect: 3,
-    text: 3
+    circle: 3,
+    triangle: 3,
+    text: 3,
+    'eraser-pixel': 20 // Pixel eraser default size
   };
   
   function getToolSize() {
@@ -146,8 +244,12 @@ if (!window.waAnnotatorInjected) {
     if (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'highlight') {
       sizeEnabled = true;
       opacityEnabled = true;
-    } else if (currentTool === 'rect' || currentTool === 'text') {
-      sizeEnabled = false;
+    } else if (currentTool === 'eraser-pixel') {
+      sizeEnabled = true; // brush size controls eraser radius
+      opacityEnabled = false;
+    } else if (currentTool === 'rect' || currentTool === 'circle' || currentTool === 'triangle' || currentTool === 'text') {
+      // Size slider controls stroke width in stroke mode for shapes
+      sizeEnabled = !isFillMode;
       opacityEnabled = true;
     } else if (currentTool === 'cursor') {
       if (activeObj) {
@@ -218,8 +320,37 @@ if (!window.waAnnotatorInjected) {
       </div>
 
       <button class="wa-btn" title="Highlight (Straight Line)" data-tool="highlight">${ICONS.highlight}</button>
-      <button class="wa-btn" title="Eraser (Click to delete annotation)" data-tool="eraser">${ICONS.eraser}</button>
-      <button class="wa-btn" title="Rectangle" data-tool="rect">${ICONS.rect}</button>
+
+      <div class="wa-tool-group" data-group="eraser">
+        <button class="wa-btn" title="Eraser" data-tool="eraser">
+          ${ICONS.eraser}
+          <div class="wa-tool-more"></div>
+        </button>
+        <div class="wa-flyout">
+          <button class="wa-btn active" title="Object Eraser (click to delete)" data-tool="eraser">${ICONS.eraser}</button>
+          <button class="wa-btn" title="Pixel Eraser (paint to erase pixels)" data-tool="eraser-pixel">${ICONS.eraserPixel}</button>
+        </div>
+      </div>
+
+      <div class="wa-tool-group" data-group="shape">
+        <button class="wa-btn" title="Rectangle" data-tool="rect">
+          ${ICONS.rectFilled}
+          <div class="wa-tool-more"></div>
+        </button>
+        <div class="wa-flyout wa-flyout-shape-panel">
+          <div class="wa-flyout-row">
+            <button class="wa-btn active" title="Rectangle" data-tool="rect">${ICONS.rect}</button>
+            <button class="wa-btn" title="Circle" data-tool="circle">${ICONS.circle}</button>
+            <button class="wa-btn" title="Triangle" data-tool="triangle">${ICONS.triangle}</button>
+          </div>
+          <div class="wa-flyout-divider"></div>
+          <div class="wa-flyout-row">
+            <button class="wa-btn active" id="wa-style-fill" title="Filled (Solid)">${ICONS.styleFill}</button>
+            <button class="wa-btn" id="wa-style-stroke" title="Stroke (Outline)">${ICONS.styleStroke}</button>
+          </div>
+        </div>
+      </div>
+
       <button class="wa-btn" title="Text" data-tool="text">${ICONS.text}</button>
       <div class="wa-separator"></div>
       <div class="wa-color-wrapper" title="Color Picker">
@@ -291,6 +422,8 @@ if (!window.waAnnotatorInjected) {
     loadState(() => {
         if (layers.length === 0) {
             addLayer('Layer 1');
+        } else {
+            saveHistory(); // capture the initial state after loading
         }
     });
   }
@@ -390,6 +523,32 @@ if (!window.waAnnotatorInjected) {
       height: window.innerHeight
     });
 
+    // Shift-constrained drawing logic (Photoshop style)
+    // Intercepts pointer coordinates globally when Shift is held during drawing
+    const originalGetPointer = canvas.getPointer;
+    canvas.getPointer = function(e, ignoreZoom) {
+      const pointer = originalGetPointer.call(this, e, ignoreZoom);
+      if (e && e.shiftKey) {
+        let lastPoint = null;
+        // Case 1: Fabric's free drawing (Pen / Pressure Pen)
+        if (this.isDrawingMode && this.freeDrawingBrush && this.freeDrawingBrush._points && this.freeDrawingBrush._points.length > 0) {
+          lastPoint = this.freeDrawingBrush._points[this.freeDrawingBrush._points.length - 1];
+        } 
+        // Case 2: Custom Pixel Eraser
+        else if (pixelEraserActive && pixelEraserPoints.length > 0) {
+          lastPoint = pixelEraserPoints[pixelEraserPoints.length - 1];
+        }
+        // Case 3: Highlight Tool (Manual Straight Line)
+        else if (isDrawingLine && currentLine) {
+          lastPoint = { x: currentLine.x1, y: currentLine.y1 };
+        }
+
+        // We removed the axis-snapping (horizontal/vertical) here as requested.
+        // The Shift-click connecting logic is handled in mouse:down.
+      }
+      return pointer;
+    };
+
     // Resize listener for window boundary changes without polling document geometries natively
     window.addEventListener('resize', () => {
       canvas.setWidth(window.innerWidth);
@@ -466,6 +625,45 @@ if (!window.waAnnotatorInjected) {
     let currentLine = null;
 
     canvas.on('mouse:down', (options) => {
+      const pointer = canvas.getPointer(options.e);
+
+      // --- NEW: Photoshop-style Shift-Click Line Connection ---
+      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel');
+      if (options.e.shiftKey && lastDrawPoint && isDrawingTool) {
+        if (currentTool === 'eraser-pixel') {
+          pixelEraserPoints = [lastDrawPoint, pointer];
+          applyPixelErasure();
+          pixelEraserPoints = [];
+        } else {
+          const color = document.getElementById('wa-color-picker').value;
+          const alpha = getToolOpacity();
+          const size = parseInt(document.getElementById('wa-brush-size').value, 10);
+          const path = new fabric.Path(`M ${lastDrawPoint.x} ${lastDrawPoint.y} L ${pointer.x} ${pointer.y}`, {
+            stroke: hexToRgba(color, alpha),
+            strokeWidth: size,
+            fill: null,
+            strokeLineCap: 'round',
+            strokeLineJoin: 'round',
+            layerId: currentLayerId,
+            selectable: false,
+            evented: false
+          });
+          canvas.add(path);
+          saveState();
+        }
+        lastDrawPoint = pointer;
+        
+        // Temporarily disable drawing mode to prevent Fabric from starting a new free-draw path
+        const wasDrawing = canvas.isDrawingMode;
+        if (wasDrawing) {
+          canvas.isDrawingMode = false;
+          setTimeout(() => { canvas.isDrawingMode = true; }, 10);
+        }
+        return;
+      }
+      // Update last point for future connections
+      lastDrawPoint = pointer;
+
       if (currentTool === 'highlight') {
         const pointer = canvas.getPointer(options.e);
         const color = document.getElementById('wa-color-picker').value;
@@ -484,9 +682,20 @@ if (!window.waAnnotatorInjected) {
         saveState();
       } else if (currentTool === 'eraser' && options.target) {
         canvas.remove(options.target);
+      } else if (currentTool === 'eraser-pixel') {
+        const pointer = canvas.getPointer(options.e);
+        pixelEraserActive = true;
+        pixelEraserPoints = [pointer];
+        drawPixelEraserPreview(pointer);
       } else if (currentTool === 'rect') {
         const pointer = canvas.getPointer(options.e);
         addRectangle(pointer);
+      } else if (currentTool === 'circle') {
+        const pointer = canvas.getPointer(options.e);
+        addCircle(pointer);
+      } else if (currentTool === 'triangle') {
+        const pointer = canvas.getPointer(options.e);
+        addTriangle(pointer);
       } else if (currentTool === 'text') {
         const pointer = canvas.getPointer(options.e);
         addText(pointer);
@@ -494,10 +703,41 @@ if (!window.waAnnotatorInjected) {
     });
     
     canvas.on('mouse:move', (options) => {
+      const pointer = canvas.getPointer(options.e);
+
+      // --- NEW: Photoshop-style Shift-Click Auxiliary Guide Line ---
+      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel');
+      // "isDrawingStroke" means we are currently in the middle of a drag stroke (Pencil, Eraser, or Highlight)
+      const isDrawingStroke = isDrawingLine || pixelEraserActive || (canvas.isDrawingMode && canvas.freeDrawingBrush && canvas.freeDrawingBrush._points && canvas.freeDrawingBrush._points.length > 0);
+
+      if (options.e.shiftKey && lastDrawPoint && isDrawingTool && !isDrawingStroke) {
+        const ctx = canvas.contextTop;
+        canvas.clearContext(ctx);
+        const vpt = canvas.viewportTransform;
+        ctx.save();
+        ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5]);
+        ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(lastDrawPoint.x, lastDrawPoint.y);
+        ctx.lineTo(pointer.x, pointer.y);
+        ctx.stroke();
+        ctx.restore();
+      } else if (!isDrawingStroke) {
+        // Only clear the upper canvas if we are NOT currently drawing a stroke.
+        // This prevents the guide line logic from wiping out the live PencilBrush or Eraser previews.
+        canvas.clearContext(canvas.contextTop);
+      }
+
       if (isDrawingLine && currentTool === 'highlight' && currentLine) {
         const pointer = canvas.getPointer(options.e);
         currentLine.set({ x2: pointer.x, y2: pointer.y });
         canvas.renderAll();
+      } else if (pixelEraserActive && currentTool === 'eraser-pixel') {
+        const pointer = canvas.getPointer(options.e);
+        pixelEraserPoints.push(pointer);
+        drawPixelEraserPreview(pointer);
       }
     });
 
@@ -509,19 +749,250 @@ if (!window.waAnnotatorInjected) {
         }
         currentLine = null;
         saveState();
+      } else if (pixelEraserActive && currentTool === 'eraser-pixel') {
+        pixelEraserActive = false;
+        canvas.clearContext(canvas.contextTop); // remove preview
+        if (pixelEraserPoints.length > 0) {
+          applyPixelErasure();
+        }
+        pixelEraserPoints = [];
+      }
+      
+      // Update last point after any stroke ends
+      lastDrawPoint = canvas.getPointer();
+    });
+    
+    // Clear guide line when Shift is released
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift' && canvas) {
+        canvas.clearContext(canvas.contextTop);
       }
     });
     
-    // Deleting objects with keyboard in cursor mode
+    // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && isVisible && currentTool === 'cursor') {
+      if (!isVisible) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Delete/Backspace
+      if ((e.key === 'Delete' || e.key === 'Backspace') && currentTool === 'cursor') {
         const activeObjects = canvas.getActiveObjects();
-        if (activeObjects.length && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        if (activeObjects.length) {
+          isHistoryAction = true;
           canvas.discardActiveObject();
           activeObjects.forEach(obj => canvas.remove(obj));
+          isHistoryAction = false;
+          saveState();
         }
       }
+
+      // Ctrl+C (Copy)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && currentTool === 'cursor') {
+        e.preventDefault();
+        const activeObject = canvas.getActiveObject();
+        if (activeObject) {
+          activeObject.clone((cloned) => {
+            clipboard = cloned;
+            pasteOffset = 20; // reset offset
+          }, ['layerId', 'id', 'p']);
+        }
+      }
+
+      // Ctrl+V (Paste)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && currentTool === 'cursor') {
+        e.preventDefault();
+        if (!clipboard) return;
+        
+        clipboard.clone((clonedObj) => {
+            isHistoryAction = true;
+            canvas.discardActiveObject();
+            
+            clonedObj.set({
+                left: clonedObj.left + pasteOffset,
+                top: clonedObj.top + pasteOffset,
+                evented: true,
+                selectable: true
+            });
+            
+            if (clonedObj.type === 'activeSelection') {
+                clonedObj.canvas = canvas;
+                clonedObj.forEachObject((obj) => {
+                    obj.set('layerId', currentLayerId);
+                    canvas.add(obj);
+                });
+                clonedObj.setCoords();
+            } else {
+                clonedObj.set('layerId', currentLayerId);
+                canvas.add(clonedObj);
+            }
+            
+            pasteOffset += 20;
+            canvas.setActiveObject(clonedObj);
+            canvas.requestRenderAll();
+            isHistoryAction = false;
+            saveState();
+        }, ['layerId', 'id', 'p']);
+      }
+
+      // Ctrl+Z (Undo) and Ctrl+Shift+Z / Ctrl+Y (Redo)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
     });
+  }
+
+  // Sync the shape group's main button icon to the current shape + fill/stroke mode
+  function updateShapeIcon() {
+    const group = document.querySelector('[data-group="shape"]');
+    if (!group) return;
+    const mainBtn = group.querySelector('.wa-btn:not(.wa-flyout .wa-btn)');
+    if (!mainBtn) return;
+
+    const shape = mainBtn.getAttribute('data-tool'); // rect | circle | triangle
+    let icon;
+    if (isFillMode) {
+      if (shape === 'rect')     icon = ICONS.rectFilled;
+      else if (shape === 'circle')   icon = ICONS.circleFilled;
+      else if (shape === 'triangle') icon = ICONS.triangleFilled;
+    } else {
+      if (shape === 'rect')     icon = ICONS.rect;
+      else if (shape === 'circle')   icon = ICONS.circle;
+      else if (shape === 'triangle') icon = ICONS.triangle;
+    }
+    if (icon) mainBtn.innerHTML = icon + '<div class="wa-tool-more"></div>';
+
+    // Also sync the style toggle icons in the flyout row 2 to match the selected shape
+    const fillBtn = document.getElementById('wa-style-fill');
+    const strokeBtn = document.getElementById('wa-style-stroke');
+    if (fillBtn && strokeBtn) {
+      if (shape === 'rect') {
+        fillBtn.innerHTML = ICONS.rectFilled;
+        strokeBtn.innerHTML = ICONS.rect;
+      } else if (shape === 'circle') {
+        fillBtn.innerHTML = ICONS.circleFilled;
+        strokeBtn.innerHTML = ICONS.circle;
+      } else if (shape === 'triangle') {
+        fillBtn.innerHTML = ICONS.triangleFilled;
+        strokeBtn.innerHTML = ICONS.triangle;
+      }
+    }
+  }
+
+  // Sync eraser group main button icon to the selected eraser mode
+  function updateEraserIcon() {
+    const group = document.querySelector('[data-group="eraser"]');
+    if (!group) return;
+    const mainBtn = group.querySelector('.wa-btn:not(.wa-flyout .wa-btn)');
+    if (!mainBtn) return;
+    const tool = mainBtn.getAttribute('data-tool'); // 'eraser' or 'eraser-pixel'
+    const icon = tool === 'eraser-pixel' ? ICONS.eraserPixel : ICONS.eraser;
+    mainBtn.innerHTML = icon + '<div class="wa-tool-more"></div>';
+  }
+
+  // Sync pen group main button icon to the selected pen mode
+  function updatePenIcon() {
+    const group = document.querySelector('[data-group="pen"]');
+    if (!group) return;
+    const mainBtn = group.querySelector('.wa-btn:not(.wa-flyout .wa-btn)');
+    if (!mainBtn) return;
+    const tool = mainBtn.getAttribute('data-tool'); // 'pen' or 'pressure-pen'
+    const icon = tool === 'pressure-pen' ? ICONS.squigglePressure : ICONS.pen;
+    mainBtn.innerHTML = icon + '<div class="wa-tool-more"></div>';
+  }
+
+  // --- Pixel Eraser Helpers ---
+
+  // Build a round cursor SVG matching the eraser size
+  function buildEraserCircleCursor(sizePx) {
+    const r = Math.max(4, Math.min(sizePx / 2, 60));
+    const dim = r * 2 + 4;
+    const cx = r + 2;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${dim}" height="${dim}" viewBox="0 0 ${dim} ${dim}"><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="1.5"/><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="0.75"/></svg>`;
+    return `url('data:image/svg+xml;utf8,${encodeURIComponent(svg)}') ${cx} ${cx}, crosshair`;
+  }
+
+  // Draws a live preview of the eraser path on the upper canvas
+  function drawPixelEraserPreview(latestPoint) {
+    const sz = toolSizes['eraser-pixel'] || 20;
+    const ctx = canvas.contextTop;
+    canvas.clearContext(ctx);
+    if (pixelEraserPoints.length < 1) return;
+
+    // Apply viewport transform so preview matches canvas pan
+    const vpt = canvas.viewportTransform;
+    ctx.save();
+    ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5]);
+
+    // Draw the eraser trail as a thick, semi-transparent line
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(120, 120, 120, 0.35)';
+    ctx.lineWidth = sz;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pixelEraserPoints[0].x, pixelEraserPoints[0].y);
+    for (let i = 1; i < pixelEraserPoints.length; i++) {
+      ctx.lineTo(pixelEraserPoints[i].x, pixelEraserPoints[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Commits the pixel erasure: adds the eraser stroke as an inverted clipPath to affected objects
+  function applyPixelErasure() {
+    if (pixelEraserPoints.length < 2) return;
+    const sz = toolSizes['eraser-pixel'] || 20;
+
+    // 1. Construct path string manually for maximum reliability
+    let pathStr = `M ${pixelEraserPoints[0].x} ${pixelEraserPoints[0].y}`;
+    for (let i = 1; i < pixelEraserPoints.length; i++) {
+      pathStr += ` L ${pixelEraserPoints[i].x} ${pixelEraserPoints[i].y}`;
+    }
+    
+    let affectedAny = false;
+
+    // 2. Apply as inverted clipPath to every object
+    canvas.getObjects().forEach(obj => {
+      // Only erase objects that belong to a layer (our annotations)
+      if (!obj.layerId) return;
+      
+      // For now, apply to all objects to verify it works, then add back intersection optimization
+      affectedAny = true;
+      
+      const pathClone = new fabric.Path(pathStr, {
+        stroke: 'black',
+        strokeWidth: sz,
+        fill: null,
+        strokeLineCap: 'round',
+        strokeLineJoin: 'round',
+        absolutePositioned: true
+      });
+
+      if (obj.clipPath && obj.clipPath.isEraserGroup) {
+        obj.clipPath.addWithUpdate(pathClone);
+      } else {
+        const group = new fabric.Group([pathClone], {
+          inverted: true,
+          absolutePositioned: true
+        });
+        group.isEraserGroup = true;
+        obj.set('clipPath', group);
+      }
+      
+      // Force re-render
+      obj.set('dirty', true);
+    });
+
+    if (affectedAny) {
+      canvas.requestRenderAll();
+      saveState();
+    }
   }
 
   function bindEvents(toolbar, layersPanel) {
@@ -538,22 +1009,34 @@ if (!window.waAnnotatorInjected) {
     // Flyout buttons logic (Photoshop-style swap)
     const flyoutBtns = toolbar.querySelectorAll('.wa-flyout .wa-btn');
     flyoutBtns.forEach(btn => {
+      // Style buttons (no data-tool) are handled separately below
+      if (!btn.hasAttribute('data-tool')) return;
+
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const toolName = btn.getAttribute('data-tool');
         
-        // Find parent group and update inner active state visually
-        const group = btn.closest('.wa-tool-group');
-        const internalBtns = group.querySelectorAll('.wa-flyout .wa-btn');
-        internalBtns.forEach(b => b.classList.remove('active'));
+        // Scope active state to the same row (or whole flyout for pen-style groups)
+        const row = btn.closest('.wa-flyout-row');
+        if (row) {
+          row.querySelectorAll('.wa-btn').forEach(b => b.classList.remove('active'));
+        } else {
+          const group = btn.closest('.wa-tool-group');
+          group.querySelectorAll('.wa-flyout .wa-btn').forEach(b => b.classList.remove('active'));
+        }
         btn.classList.add('active');
 
-        // Swap the tool assigned to the main button, WITHOUT replacing its icon array
+        // Swap the tool assigned to the main button
+        const group = btn.closest('.wa-tool-group');
         const mainBtn = group.querySelector('.wa-btn:not(.wa-flyout .wa-btn)');
         mainBtn.setAttribute('data-tool', toolName);
         
         // Let the mainBtn click logic handle activating the tool and UI states
         mainBtn.click();
+        // Sync the main button icon for pen, shape and eraser groups
+        updatePenIcon();
+        updateShapeIcon();
+        updateEraserIcon();
       });
     });
 
@@ -608,6 +1091,11 @@ if (!window.waAnnotatorInjected) {
       
       if (currentTool === 'pen' || currentTool === 'pressure-pen') {
          canvas.freeDrawingBrush.width = sz;
+      } else if (currentTool === 'eraser-pixel') {
+         // Update the circle cursor to reflect the new size
+         const newCursor = buildEraserCircleCursor(sz);
+         canvas.defaultCursor = newCursor;
+         canvas.hoverCursor = newCursor;
       }
       
       const activeObj = canvas.getActiveObject();
@@ -621,6 +1109,26 @@ if (!window.waAnnotatorInjected) {
 
     // Initial UI state setup for the color and sizes matching Defaults
     updatePreviewAndLabels();
+
+    // Fill / Stroke style buttons inside the shape flyout
+    document.getElementById('wa-style-fill').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isFillMode) return; // already active
+      isFillMode = true;
+      document.getElementById('wa-style-fill').classList.add('active');
+      document.getElementById('wa-style-stroke').classList.remove('active');
+      updateShapeIcon();
+      updateSliderStates();
+    });
+    document.getElementById('wa-style-stroke').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!isFillMode) return; // already active
+      isFillMode = false;
+      document.getElementById('wa-style-stroke').classList.add('active');
+      document.getElementById('wa-style-fill').classList.remove('active');
+      updateShapeIcon();
+      updateSliderStates();
+    });
 
     // Adds a new layer
     document.getElementById('wa-add-layer').addEventListener('click', () => {
@@ -845,8 +1353,18 @@ if (!window.waAnnotatorInjected) {
         canvas.forEachObject(obj => { obj.selectable = false; obj.evented = true; }); // needs evented for click detection
         canvas.defaultCursor = CUSTOM_CURSORS.eraser;
         canvas.hoverCursor = CUSTOM_CURSORS.eraser;
+      } else if (tool === 'eraser-pixel') {
+        // Pixel eraser: no eventing needed on objects, use a custom circle cursor
+        canvas.forEachObject(obj => { obj.selectable = false; obj.evented = false; });
+        const sz = toolSizes['eraser-pixel'] || 20;
+        canvas.defaultCursor = buildEraserCircleCursor(sz);
+        canvas.hoverCursor = canvas.defaultCursor;
       } else if (tool === 'rect') {
         canvas.defaultCursor = CUSTOM_CURSORS.rect;
+      } else if (tool === 'circle') {
+        canvas.defaultCursor = CUSTOM_CURSORS.circle;
+      } else if (tool === 'triangle') {
+        canvas.defaultCursor = CUSTOM_CURSORS.triangle;
       } else if (tool === 'text') {
         canvas.defaultCursor = CUSTOM_CURSORS.text;
       }
@@ -855,13 +1373,16 @@ if (!window.waAnnotatorInjected) {
 
   function addRectangle(pointer) {
     const color = document.getElementById('wa-color-picker').value;
+    const size = parseInt(document.getElementById('wa-brush-size').value, 10);
     const rect = new fabric.Rect({
       left: pointer.x,
       top: pointer.y,
-      fill: color,
+      fill: isFillMode ? color : 'transparent',
+      stroke: isFillMode ? null : color,
+      strokeWidth: isFillMode ? 0 : size,
       width: 100,
       height: 80,
-      rx: 8, // rounded corners
+      rx: 8,
       ry: 8,
       layerId: currentLayerId
     });
@@ -870,6 +1391,43 @@ if (!window.waAnnotatorInjected) {
     // Switch to cursor tool automatically after placing
     document.querySelector('[data-tool="cursor"]').click();
     canvas.setActiveObject(rect);
+  }
+
+  function addCircle(pointer) {
+    const color = document.getElementById('wa-color-picker').value;
+    const size = parseInt(document.getElementById('wa-brush-size').value, 10);
+    const circle = new fabric.Circle({
+      left: pointer.x,
+      top: pointer.y,
+      radius: 50,
+      fill: isFillMode ? color : 'transparent',
+      stroke: isFillMode ? null : color,
+      strokeWidth: isFillMode ? 0 : size,
+      layerId: currentLayerId
+    });
+    canvas.add(circle);
+    
+    document.querySelector('[data-tool="cursor"]').click();
+    canvas.setActiveObject(circle);
+  }
+
+  function addTriangle(pointer) {
+    const color = document.getElementById('wa-color-picker').value;
+    const size = parseInt(document.getElementById('wa-brush-size').value, 10);
+    const triangle = new fabric.Triangle({
+      left: pointer.x,
+      top: pointer.y,
+      width: 100,
+      height: 86,
+      fill: isFillMode ? color : 'transparent',
+      stroke: isFillMode ? null : color,
+      strokeWidth: isFillMode ? 0 : size,
+      layerId: currentLayerId
+    });
+    canvas.add(triangle);
+    
+    document.querySelector('[data-tool="cursor"]').click();
+    canvas.setActiveObject(triangle);
   }
 
   function addText(pointer) {
@@ -898,6 +1456,7 @@ if (!window.waAnnotatorInjected) {
     layers.push({ id, name, visible: true });
     currentLayerId = id;
     renderLayers();
+    saveState();
   }
 
   function removeLayer(id) {
