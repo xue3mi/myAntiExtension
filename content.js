@@ -707,26 +707,25 @@ if (!window.waAnnotatorInjected) {
 
       // --- NEW: Photoshop-style Shift-Click Auxiliary Guide Line ---
       const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel');
-      // "isDrawingStroke" means we are currently in the middle of a drag stroke (Pencil, Eraser, or Highlight)
-      const isDrawingStroke = isDrawingLine || pixelEraserActive || (canvas.isDrawingMode && canvas.freeDrawingBrush && canvas.freeDrawingBrush._points && canvas.freeDrawingBrush._points.length > 0);
+      // Idle means the mouse button is NOT pressed (more reliable than checking points arrays)
+      const isIdle = !options.e.buttons;
 
-      if (options.e.shiftKey && lastDrawPoint && isDrawingTool && !isDrawingStroke) {
+      if (options.e.shiftKey && lastDrawPoint && isDrawingTool && isIdle) {
         const ctx = canvas.contextTop;
         canvas.clearContext(ctx);
         const vpt = canvas.viewportTransform;
         ctx.save();
         ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5]);
-        ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(120, 120, 120, 0.6)';
+        ctx.setLineDash([5, 5]);
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(lastDrawPoint.x, lastDrawPoint.y);
         ctx.lineTo(pointer.x, pointer.y);
         ctx.stroke();
         ctx.restore();
-      } else if (!isDrawingStroke) {
-        // Only clear the upper canvas if we are NOT currently drawing a stroke.
-        // This prevents the guide line logic from wiping out the live PencilBrush or Eraser previews.
+      } else if (isIdle) {
+        // Only clear if we are idle (not drawing) to avoid flickering
         canvas.clearContext(canvas.contextTop);
       }
 
