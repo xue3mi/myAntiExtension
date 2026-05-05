@@ -10,6 +10,9 @@
   font-family: 'Inter', sans-serif;
   color: #333;
 }
+#wa-ui-container * {
+  box-sizing: border-box;
+}
 
 #wa-ui-container.hidden {
   display: none !important;
@@ -33,8 +36,8 @@
 /* Toolbar */
 #wa-toolbar {
   left: 16px;
-  width: 52px; /* Revert to standard width */
-  padding: 8px; /* Gives internal width of 52px */
+  width: 68px; /* Fixed width including padding */
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center; /* Prevent flex stretching anomalies */
@@ -48,7 +51,8 @@
 /* Layers Panel */
 #wa-layers {
   right: 16px;
-  width: 220px;
+  width: 240px;
+  padding: 12px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -71,7 +75,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 13px;
   z-index: 11;
   top: 50%;
   transform: translateY(-50%);
@@ -95,7 +99,6 @@
   width: 44px;
   height: 44px;
   padding: 0;
-  box-sizing: border-box;
   color: #444; /* Clean SVG dark grey */
   cursor: pointer;
   display: flex;
@@ -293,7 +296,7 @@
   justify-content: center;
 }
 .wa-slider-value {
-  font-size: 0.65rem;
+  font-size: 10px;
   color: #888;
   margin-top: 4px;
   text-align: center;
@@ -310,7 +313,7 @@
 }
 .wa-layer-header h3 {
   margin: 0;
-  font-size: 0.95rem; /* smaller header */
+  font-size: 15px; /* smaller header */
   font-weight: 600;
 }
 .wa-header-actions {
@@ -362,7 +365,7 @@
   background: #ffffff;
   padding: 8px 10px;
   border-radius: 12px; /* rounded layer items */
-  font-size: 0.85rem;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.1s;
 }
@@ -383,7 +386,7 @@
   font-weight: 500;
 }
 .wa-layer-meta {
-  font-size: 0.7rem;
+  font-size: 11px;
   color: #888;
   margin-left: 6px;
 }
