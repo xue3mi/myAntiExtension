@@ -77,6 +77,7 @@ if (!window.waAnnotatorInjected) {
   let pixelEraserActive = false;
   let pixelEraserPoints = [];
   let lastDrawPoint = null; // Stores last point for Shift-click line connection
+  let lastDrawnHighlightLine = null;
   
   let isAutoSave = false;
   
@@ -628,30 +629,57 @@ if (!window.waAnnotatorInjected) {
       const pointer = canvas.getPointer(options.e);
 
       // --- NEW: Photoshop-style Shift-Click Line Connection ---
-      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel');
+      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel' || currentTool === 'highlight');
       if (options.e.shiftKey && lastDrawPoint && isDrawingTool) {
+        let targetX = pointer.x;
+        let targetY = pointer.y;
+
+        // Snap to horizontal or vertical for highlight
+        if (currentTool === 'highlight') {
+            if (Math.abs(pointer.x - lastDrawPoint.x) > Math.abs(pointer.y - lastDrawPoint.y)) {
+                targetY = lastDrawPoint.y;
+            } else {
+                targetX = lastDrawPoint.x;
+            }
+        }
+
         if (currentTool === 'eraser-pixel') {
-          pixelEraserPoints = [lastDrawPoint, pointer];
+          pixelEraserPoints = [lastDrawPoint, { x: targetX, y: targetY }];
           applyPixelErasure();
           pixelEraserPoints = [];
         } else {
           const color = document.getElementById('wa-color-picker').value;
           const alpha = getToolOpacity();
           const size = parseInt(document.getElementById('wa-brush-size').value, 10);
-          const path = new fabric.Path(`M ${lastDrawPoint.x} ${lastDrawPoint.y} L ${pointer.x} ${pointer.y}`, {
-            stroke: hexToRgba(color, alpha),
-            strokeWidth: size,
-            fill: null,
-            strokeLineCap: 'round',
-            strokeLineJoin: 'round',
-            layerId: currentLayerId,
-            selectable: false,
-            evented: false
-          });
-          canvas.add(path);
+          
+          if (currentTool === 'highlight' && lastDrawnHighlightLine && 
+              lastDrawnHighlightLine.x1 === lastDrawnHighlightLine.x2 && 
+              lastDrawnHighlightLine.y1 === lastDrawnHighlightLine.y2 && 
+              lastDrawnHighlightLine.x1 === lastDrawPoint.x && 
+              lastDrawnHighlightLine.y1 === lastDrawPoint.y) {
+              
+              lastDrawnHighlightLine.set({ x2: targetX, y2: targetY });
+              lastDrawnHighlightLine.setCoords();
+              canvas.renderAll();
+              saveState();
+          } else {
+              const line = new fabric.Line([lastDrawPoint.x, lastDrawPoint.y, targetX, targetY], {
+                stroke: hexToRgba(color, alpha),
+                strokeWidth: size,
+                strokeLineCap: currentTool === 'highlight' ? 'square' : 'round',
+                layerId: currentLayerId,
+                selectable: false,
+                evented: false
+              });
+              canvas.add(line);
+              if (currentTool === 'highlight') {
+                 lastDrawnHighlightLine = line;
+              }
+              saveState();
+          }
           saveState();
         }
-        lastDrawPoint = pointer;
+        lastDrawPoint = { x: targetX, y: targetY };
         
         // Temporarily disable drawing mode to prevent Fabric from starting a new free-draw path
         const wasDrawing = canvas.isDrawingMode;
@@ -706,11 +734,23 @@ if (!window.waAnnotatorInjected) {
       const pointer = canvas.getPointer(options.e);
 
       // --- NEW: Photoshop-style Shift-Click Auxiliary Guide Line ---
-      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel');
+      const isDrawingTool = (currentTool === 'pen' || currentTool === 'pressure-pen' || currentTool === 'eraser-pixel' || currentTool === 'highlight');
       // Idle means the mouse button is NOT pressed (more reliable than checking points arrays)
       const isIdle = !options.e.buttons;
 
       if (options.e.shiftKey && lastDrawPoint && isDrawingTool && isIdle) {
+        let targetX = pointer.x;
+        let targetY = pointer.y;
+
+        // Snap to horizontal or vertical for highlight
+        if (currentTool === 'highlight') {
+            if (Math.abs(pointer.x - lastDrawPoint.x) > Math.abs(pointer.y - lastDrawPoint.y)) {
+                targetY = lastDrawPoint.y;
+            } else {
+                targetX = lastDrawPoint.x;
+            }
+        }
+
         const ctx = canvas.contextTop;
         canvas.clearContext(ctx);
         const vpt = canvas.viewportTransform;
@@ -721,7 +761,7 @@ if (!window.waAnnotatorInjected) {
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(lastDrawPoint.x, lastDrawPoint.y);
-        ctx.lineTo(pointer.x, pointer.y);
+        ctx.lineTo(targetX, targetY);
         ctx.stroke();
         ctx.restore();
       } else if (isIdle) {
@@ -730,8 +770,18 @@ if (!window.waAnnotatorInjected) {
       }
 
       if (isDrawingLine && currentTool === 'highlight' && currentLine) {
-        const pointer = canvas.getPointer(options.e);
-        currentLine.set({ x2: pointer.x, y2: pointer.y });
+        let currentPointer = canvas.getPointer(options.e);
+        
+        // Dynamic drag snapping for highlight when Shift is pressed
+        if (options.e.shiftKey) {
+            if (Math.abs(currentPointer.x - currentLine.x1) > Math.abs(currentPointer.y - currentLine.y1)) {
+                currentPointer.y = currentLine.y1;
+            } else {
+                currentPointer.x = currentLine.x1;
+            }
+        }
+        
+        currentLine.set({ x2: currentPointer.x, y2: currentPointer.y });
         canvas.renderAll();
       } else if (pixelEraserActive && currentTool === 'eraser-pixel') {
         const pointer = canvas.getPointer(options.e);
@@ -746,6 +796,7 @@ if (!window.waAnnotatorInjected) {
         if (currentLine) {
            currentLine.setCoords(); // crucial for fabric hit detection since we manually mutated x2/y2
         }
+        lastDrawnHighlightLine = currentLine;
         currentLine = null;
         saveState();
       } else if (pixelEraserActive && currentTool === 'eraser-pixel') {
